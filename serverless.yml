@@ -9,7 +9,6 @@ provider:
   region: eu-west-3
   environment:
     CANDIDATE_TABLE: ${self:service}-${opt:stage, self:provider.stage}
-    CANDIDATE_EMAIL_TABLE: "candidate-email-${opt:stage, self:provider.stage}"
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -20,6 +19,14 @@ provider:
       Resource: "*"
 
 functions:
+  checkSirene:
+    handler: api/sirene.check
+    memorySize: 128
+    description: Checks whether a siret exists.
+    events:
+      - http:
+          path: sirene/{siret}
+          method: get
   candidateSubmission:
     handler: api/candidate.submit
     memorySize: 128
@@ -49,12 +56,10 @@ resources:
       DeletionPolicy: Retain
       Properties:
         AttributeDefinitions:
-          -
-            AttributeName: "id"
+          - AttributeName: "id"
             AttributeType: "S"
         KeySchema:
-          -
-            AttributeName: "id"
+          - AttributeName: "id"
             KeyType: "HASH"
         ProvisionedThroughput:
           ReadCapacityUnits: 1
